@@ -2,7 +2,13 @@
   (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]))
 
-(defonce app-state (atom {:text "This is some new text"}))
+(defonce app-state (atom {:text "This is some new text"
+                          :items ["bird", "cat", "dog"]}))
+
+(defn alist [items]
+  (apply
+    dom/ul nil
+    (map #(dom/li nil %) items)))
 
 (defn main []
 (om/root
@@ -14,6 +20,8 @@
       om/IRenderState
       (render-state [_ {:keys [value]}]
         (dom/div nil
+          (dom/h1 nil (:text app))
+          (alist (:items app))
           (dom/label nil "Only numeric : ")
           (dom/input #js
             {:value value
