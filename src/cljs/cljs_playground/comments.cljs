@@ -1,95 +1,77 @@
 (ns cljs-playground.core
-  (:require [om.core :as om :include-macros true]
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
+  (:require [om.core :as om  :include-macros true]
             [om.dom :as dom :include-macros true]))
 
 (enable-console-print!)
 
 (def app-state
   (atom
-    {:comments-data [{ :author "Mike Wilcox" :text "ClojureScript is sweet" }
-                                            { :author "Rich Hickey" :text "Simplicity is hard work" }]}))
+    {:data {:comments [{ :author "Commenter 1" :text "comment 1" }
+                       { :author "Commenter 2" :text "comment 2" }]}}))
 
 (defn Comment
-  [props owner]
+  [comment]
   (reify
-    om/IWillMount
-    (will-mount [_]
-      (println "Comment mounting"))
-    om/IWillUnmount
-    (will-unmount [_]
-      (println "Comment unmounting"))
     om/IRender
     (render [_]
-      (println "Comment rendered" props)
       (dom/div nil
-        (dom/h2 nil (str (:author props)) ": " (str (:text props)))))))
+               (dom/h2 nil (str (:author comment)) ": " (str (:text comment)))))))
 
 (defn CommentList
-  [props owner]
+  [comments-data]
   (reify
-    om/IWillMount
-    (will-mount [_]
-      (println "Comment List mounting"))
-    om/IWillUnmount
-    (will-unmount [_]
-      (println "Comment List unmounting"))
     om/IRender
     (render [_]
-      (println "Comment List rendered")
       (dom/div nil
-        (apply
-          dom/ul nil
-          (map #(om/build Comment (:comments-data props %)) props))))))
+               (apply
+                 dom/ul nil
+                 (om/build-all Comment comments-data)))))) ;; build-all iterates over a sequence and builds a component for each item
 
 (defn CommentBox
-  [props owner]
+  [comments]
   (reify
-    om/IWillMount
-    (will-mount [_]
-      (println "Comment Box mounting"))
-    om/IWillUnmount
-    (will-unmount [_]
-      (println "Comment Box unmounting"))
     om/IRender
     (render [_]
-      (println "Comment Box rendered")
       (dom/div nil
-        (om/build CommentList props)))))
+               (om/build CommentList (:comments comments))))))
 
 (defn handle-change [e owner {:keys [text]}]
   (om/set-state! owner :text (.. e -target -value)))
 
-(defn handle-submit [e owner {:keys [text]} data]
-  (om/set-state! owner :text "")
-  (om/transact! data push))
+(defn handle-submit [e owner {:keys [text]} comments]
+  (println "comments: " @comments)
+  ;; When you trasact! or update!, you need to pass cursor, key(s) where the cursor will be updated and the data/function
+  (om/transact! comments :comments #(conj % {:author "Guest" :text text}))
+  (om/set-state! owner :text ""))
 
 (defn Input
-  [data owner]
+  [comments owner]
   (reify
     om/IInitState
     (init-state [_]
       {:text nil})
     om/IRenderState
-    (render-state [this state]
+    (render-state [_ state]
       (dom/div nil
-        (dom/input #js
-          { :type "text"
-            :ref "text-field"
-            :value (:text state)
-            :onChange (fn [event] (handle-change event owner state))})
-        (dom/button
-          #js { :onClick (fn [event] (handle-submit event owner state data))}
-              "submit")))))
+               (dom/input #js
+                          {:type "text"
+                           :ref "text-field"
+                           :value (:text state)
+                           :onChange (fn [event] (handle-change event owner state))})
+               (dom/button
+                 #js { :onClick (fn [event] (handle-submit event owner state comments))}
+                 "submit")))))
 
-(defn my-app [global owner]
+(defn my-app [global]
   (reify
     om/IRender
-    (render [_]
-      (println "Root rendered")
+    (render [this]
       (dom/div nil
-        (dom/h2 nil "A mini comments app using clojure and react")
-        (om/build CommentBox (:comments-data global))
-        (om/build Input ((get global :comments-data) this))))))
+               (dom/h2 nil "A mini comments app using clojurescript and react")
+               (om/build CommentBox (:data global))
+               (om/build Input (:data global))))))
 
-(om/root my-app app-state
-  {:target (.getElementById js/document "app")})
+(defn main []
+  (om/root my-app app-state
+           {:target (.getElementById js/document "app")}))
