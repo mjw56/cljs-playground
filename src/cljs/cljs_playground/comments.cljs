@@ -33,7 +33,7 @@
   (reify
     om/IRender
     (render [_]
-      (dom/div nil
+      (dom/div #js { :id "comment-box" }
                (om/build CommentList (:comments comments))))))
 
 (defn handle-change [e owner {:keys [text]}]
@@ -43,7 +43,10 @@
   (println "comments: " @comments)
   ;; When you trasact! or update!, you need to pass cursor, key(s) where the cursor will be updated and the data/function
   (om/transact! comments :comments #(conj % {:author "Guest" :text text}))
-  (om/set-state! owner :text ""))
+  (om/set-state! owner :text "")
+  (let [comment-box (.getElementById js/document "comment-box")]
+     (set! (.-scrollTop comment-box) (.-scrollHeight comment-box))
+  ))
 
 (defn Input
   [comments owner]
@@ -53,7 +56,7 @@
       {:text nil})
     om/IRenderState
     (render-state [_ state]
-      (dom/div #js {:className "input-group"}
+        (dom/div #js {:className "input-group col-sm-12"}
                (dom/input #js
                           {:type "text"
                            :ref "text-field"
@@ -62,9 +65,9 @@
                            :onChange (fn [event] (handle-change event owner state))})
                (dom/span #js {:className "input-group-btn" }
                  (dom/button
-                   #js { :className "btn btn-default"
-                         :onClick (fn [event] (handle-submit event owner state comments)
-                         :type "submit")}
+                   #js {
+                         :className "btn btn-default"
+                         :onClick (fn [event] (handle-submit event owner state comments))}
                    "submit"))))))
 
 (defn my-app [global]
@@ -72,7 +75,7 @@
     om/IRender
     (render [this]
       (dom/div nil
-               (dom/h2 nil "A mini comments app using clojurescript and react")
+               (dom/h2 nil "comments")
                (om/build CommentBox (:data global))
                (om/build Input (:data global))))))
 
