@@ -53,15 +53,19 @@
       {:text nil})
     om/IRenderState
     (render-state [_ state]
-      (dom/div nil
+      (dom/div #js {:className "input-group"}
                (dom/input #js
                           {:type "text"
                            :ref "text-field"
                            :value (:text state)
+                           :className "form-control"
                            :onChange (fn [event] (handle-change event owner state))})
-               (dom/button
-                 #js { :onClick (fn [event] (handle-submit event owner state comments))}
-                 "submit")))))
+               (dom/span #js {:className "input-group-btn" }
+                 (dom/button
+                   #js { :className "btn btn-default"
+                         :onClick (fn [event] (handle-submit event owner state comments)
+                         :type "submit")}
+                   "submit"))))))
 
 (defn my-app [global]
   (reify
