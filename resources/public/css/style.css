@@ -1,3 +1,13 @@
+body {
+  font-family: monospace;
+}
+
 h1 {
-  text-decoration: underline;
+  text-decoration: none;
+  color: green;
+}
+
+#comment-box {
+  height: 250px;
+  overflow-y: auto;
 }
