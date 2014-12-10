@@ -11,3 +11,7 @@ h1 {
   height: 250px;
   overflow-y: auto;
 }
+
+ul {
+  font-size: 18px;
+}
