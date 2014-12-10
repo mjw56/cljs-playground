@@ -16,7 +16,7 @@
     om/IRender
     (render [_]
       (dom/div nil
-               (dom/h2 nil (str (:author comment)) ": " (str (:text comment)))))))
+               (str (:author comment)) ": " (str (:text comment))))))
 
 (defn CommentList
   [comments-data]
@@ -45,7 +45,9 @@
   (om/transact! comments :comments #(conj % {:author "Guest" :text text}))
   (om/set-state! owner :text "")
   (let [comment-box (.getElementById js/document "comment-box")]
-     (set! (.-scrollTop comment-box) (.-scrollHeight comment-box))
+    (let [offer (.-offsetTop comment-box)]
+      (println "got this !" comment-box)
+      (set! (.-scrollTop comment-box) (.-scrollHeight comment-box)))
   ))
 
 (defn Input
