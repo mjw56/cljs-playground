@@ -46,7 +46,6 @@
   (om/set-state! owner :text "")
   (let [comment-box (.getElementById js/document "comment-box")]
     (let [offer (.-offsetTop comment-box)]
-      (println "got this !" comment-box)
       (set! (.-scrollTop comment-box) (.-scrollHeight comment-box)))
   ))
 
