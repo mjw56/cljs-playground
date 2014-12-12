@@ -40,7 +40,8 @@
   (om/set-state! owner :text (.. e -target -value)))
 
 (defn handle-submit [e owner {:keys [text]} comments]
-  (println "comments: " @comments)
+  (.log js/console "comments" @comments)
+
   ;; When you trasact! or update!, you need to pass cursor, key(s) where the cursor will be updated and the data/function
   (om/transact! comments :comments #(conj % {:author "Guest" :text text}))
   (om/set-state! owner :text "")
